@@ -87,6 +87,8 @@ pub unsafe fn create_pipeline(
         .attachments(attachments)
         .blend_constants([0.0, 0.0, 0.0, 0.0]);
 
+
+
     device.destroy_shader_module(vert_shader_module, None);
     device.destroy_shader_module(frag_shader_module, None);
     Ok(())
