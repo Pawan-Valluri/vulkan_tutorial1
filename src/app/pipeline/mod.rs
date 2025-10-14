@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result};
 
 use vulkanalia::prelude::v1_4::*;
 use vulkanalia::bytecode::Bytecode;
@@ -8,21 +8,22 @@ use crate::app::appdata::AppData;
 
 pub unsafe fn create_pipeline(
     device: &Device,
-    data: &AppData
+    data: &mut AppData
 ) -> Result<()> {
     let vert = include_bytes!("../shaders/vert.spv");
     let frag = include_bytes!("../shaders/frag.spv");
 
     let vert_shader_module = create_shader_module(device, &vert[..])?;
-    let frag_shader_module = create_shader_module(device, &vert[..])?;
+    let frag_shader_module = create_shader_module(device, &frag[..])?;
 
-    // Pipeline stages
-
-    // vertex input stage
-    let vertex_input_stage = vk::PipelineVertexInputStateCreateInfo::builder();
+    // =====================
+    //  PIPELINE STAGES
+    // =====================
+    // vertex input state
+    let vertex_input_state = vk::PipelineVertexInputStateCreateInfo::builder();
 
     // input assembly
-    let input_assembly_stage = vk::PipelineInputAssemblyStateCreateInfo::builder()
+    let input_assembly_state = vk::PipelineInputAssemblyStateCreateInfo::builder()
         .topology(vk::PrimitiveTopology::TRIANGLE_LIST)
         .primitive_restart_enable(false);
 
@@ -45,7 +46,7 @@ pub unsafe fn create_pipeline(
         .extent(data.swapchain_extent);
     let viewports = &[viewport];
     let scissors = &[scissor];
-    let viewport_stage = vk::PipelineViewportStateCreateInfo::builder()
+    let viewport_state = vk::PipelineViewportStateCreateInfo::builder()
         .viewports(viewports)
         .scissors(scissors);
 
@@ -55,8 +56,8 @@ pub unsafe fn create_pipeline(
         .module(frag_shader_module)
         .name(b"main\0");
 
-    // Rasterization stage
-    let rasterization_stage = vk::PipelineRasterizationStateCreateInfo::builder()
+    // Rasterization state
+    let rasterization_state = vk::PipelineRasterizationStateCreateInfo::builder()
         .depth_clamp_enable(false)
         .rasterizer_discard_enable(false)
         .polygon_mode(vk::PolygonMode::FILL)
@@ -66,7 +67,7 @@ pub unsafe fn create_pipeline(
         .depth_bias_enable(false);
 
     // Multisampling (AA)
-    let multisampling_stage = vk::PipelineMultisampleStateCreateInfo::builder()
+    let multisampling_state = vk::PipelineMultisampleStateCreateInfo::builder()
         .sample_shading_enable(false)
         .rasterization_samples(vk::SampleCountFlags::_1);
 
@@ -81,14 +82,44 @@ pub unsafe fn create_pipeline(
         .dst_alpha_blend_factor(vk::BlendFactor::ZERO)
         .alpha_blend_op(vk::BlendOp::ADD);
     let attachments = &[attachment];
-    let color_blend_stage = vk::PipelineColorBlendStateCreateInfo::builder()
+    let color_blend_state = vk::PipelineColorBlendStateCreateInfo::builder()
         .logic_op_enable(false)
         .logic_op(vk::LogicOp::COPY)
         .attachments(attachments)
         .blend_constants([0.0, 0.0, 0.0, 0.0]);
 
+    // Pipeline Layout
+    let layout_info = vk::PipelineLayoutCreateInfo::builder();
+    data.pipeline_layout = device.create_pipeline_layout(&layout_info, None)?;
+
+    let stages = &[vert_stage, frag_stage];
+    let pipeline_info = vk::GraphicsPipelineCreateInfo::builder()
+        // Shader stages
+        .stages(stages)
+        // Fixed stages
+        .vertex_input_state(&vertex_input_state)
+        .input_assembly_state(&input_assembly_state)
+        .viewport_state(&viewport_state)
+        .rasterization_state(&rasterization_state)
+        .multisample_state(&multisampling_state)
+        .color_blend_state(&color_blend_state)
+        // Pipeline layout
+        .layout(data.pipeline_layout)
+        // Render pass
+        .render_pass(data.render_pass)
+        .subpass(0)
+        // Parent pipeline (if any)
+        .base_pipeline_handle(vk::Pipeline::null())
+        .base_pipeline_index(-1);
+
+    data.pipeline = device.create_graphics_pipelines(
+        vk::PipelineCache::null(),
+        &[pipeline_info],
+        None
+    )?.0[0];
 
 
+    // Cleanup (now the shader modiles are not required as it is already loaded into the pipeline)
     device.destroy_shader_module(vert_shader_module, None);
     device.destroy_shader_module(frag_shader_module, None);
     Ok(())

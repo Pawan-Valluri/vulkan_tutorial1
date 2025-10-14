@@ -12,7 +12,9 @@ mod appdata;
 mod instance;
 mod queue_families;
 mod swapchain;
+mod render_pass;
 mod pipeline;
+mod framebuffer;
 
 use crate::app::instance::VALIDATION_ENABLED;
 
@@ -42,7 +44,9 @@ impl App {
         swapchain::create_swapchain(window, &instance, &device, &mut data)?;
         swapchain::create_swapchain_image_views(&device, &mut data)?;
 
-        pipeline::create_pipeline(&device, &data)?;
+        render_pass::create_render_pass(&instance, &device, &mut data)?;
+        pipeline::create_pipeline(&device, &mut data)?;
+        framebuffer::create_framebuffers(&device, &mut data)?;
 
         println!("App created");
         Ok(Self { entry, instance, data, device })
@@ -55,6 +59,14 @@ impl App {
 
     /// Destroys our Vulkan app.
     pub unsafe fn destroy(&mut self) {
+        self.data.framebuffers
+            .iter()
+            .for_each(|i| self.device.destroy_framebuffer(*i, None));
+
+        self.device.destroy_pipeline(self.data.pipeline, None);
+        self.device.destroy_pipeline_layout(self.data.pipeline_layout, None);
+        self.device.destroy_render_pass(self.data.render_pass, None);
+
         self.data.swapchain_image_views.iter()
             .for_each(|v| self.device.destroy_image_view(*v, None));
         self.device.destroy_swapchain_khr(self.data.swapchain, None);
@@ -68,7 +80,6 @@ impl App {
         }
 
         self.instance.destroy_instance(None);
-
 
     }
 }
