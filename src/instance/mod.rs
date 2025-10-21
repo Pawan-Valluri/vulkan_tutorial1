@@ -10,8 +10,8 @@ use vulkanalia::Version;
 
 use winit::window::Window;
 
-use crate::app::appdata;
-use crate::app::core::debug_callback;
+use crate::app::data;
+use crate::core::debug_callback;
 
 
 pub const VALIDATION_ENABLED: bool =
@@ -27,7 +27,7 @@ pub const PORTABILITY_MACOS_VERSION: Version = Version::new(1, 3, 216);
 pub unsafe fn create_instance(
     window: &Window,
     entry: &Entry,
-    data: &mut appdata::AppData
+    data: &mut data::AppData
 ) -> Result<Instance> {
     let application_info = vk::ApplicationInfo::builder()
         .application_name(b"Vulkan Tutorial")

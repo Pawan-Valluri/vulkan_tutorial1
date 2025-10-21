@@ -19,6 +19,7 @@ pub struct AppData {
     pub pipeline_layout: vk::PipelineLayout,
     pub pipeline: vk::Pipeline,
 
-    pub framebuffers: Vec<vk::Framebuffer>
+    pub framebuffers: Vec<vk::Framebuffer>,
+    pub command_pool: vk::CommandPool,
 
 }

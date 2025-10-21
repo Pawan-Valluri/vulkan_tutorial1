@@ -1,10 +1,9 @@
 use anyhow::{Result};
 
 use vulkanalia::prelude::v1_4::*;
-use vulkanalia::bytecode::Bytecode;
 
-use crate::app::appdata::AppData;
-
+use crate::app::data::AppData;
+use crate::pipeline::shaders;
 
 pub unsafe fn create_pipeline(
     device: &Device,
@@ -13,8 +12,8 @@ pub unsafe fn create_pipeline(
     let vert = include_bytes!("../shaders/vert.spv");
     let frag = include_bytes!("../shaders/frag.spv");
 
-    let vert_shader_module = create_shader_module(device, &vert[..])?;
-    let frag_shader_module = create_shader_module(device, &frag[..])?;
+    let vert_shader_module = shaders::create_shader_module(device, &vert[..])?;
+    let frag_shader_module = shaders::create_shader_module(device, &frag[..])?;
 
     // =====================
     //  PIPELINE STAGES
@@ -123,17 +122,4 @@ pub unsafe fn create_pipeline(
     device.destroy_shader_module(vert_shader_module, None);
     device.destroy_shader_module(frag_shader_module, None);
     Ok(())
-}
-
-
-pub unsafe fn create_shader_module(
-    device: &Device,
-    bytecode: &[u8],
-) -> Result<vk::ShaderModule> {
-    let bytecode = Bytecode::new(bytecode).unwrap();
-    let info = vk::ShaderModuleCreateInfo::builder()
-        .code(bytecode.code())
-        .code_size(bytecode.code_size());
-
-    Ok(device.create_shader_module(&info, None)?)
 }

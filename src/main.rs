@@ -8,7 +8,14 @@
 )]
 
 
-mod app;
+pub mod app;
+pub mod core;
+pub mod device;
+pub mod frame;
+pub mod instance;
+pub mod pipeline;
+pub mod swapchain;
+pub mod command;
 
 use anyhow::Result;
 
@@ -31,7 +38,7 @@ fn main() -> Result<()> {
         .build(&event_loop)?;
 
     // App
-    let mut app = unsafe { app::App::create(&window)? };
+    let mut app = unsafe { app::app::App::create(&window)? };
     event_loop.run(move |event, elwt| {
         match event {
             // Request a redraw when all events were processed.

@@ -4,7 +4,7 @@ use winit::window::Window;
 use vulkanalia::vk::KhrSurfaceExtension;
 use vulkanalia::prelude::v1_4::*;
 
-use crate::app::appdata::AppData;
+use crate::app::data::AppData;
 
 
 #[derive(Clone, Debug)]

@@ -3,8 +3,8 @@ use anyhow::{anyhow, Result};
 use vulkanalia::prelude::v1_4::*;
 use vulkanalia::vk::KhrSurfaceExtension;
 
-use crate::app::appdata::AppData;
-use crate::app::core::SuitabilityError;
+use crate::app::data::AppData;
+use crate::core::SuitabilityError;
 
 pub struct QueueFamilyIndices {
     pub graphics: u32,

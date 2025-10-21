@@ -3,7 +3,7 @@ use anyhow::{Result};
 use vulkanalia::Instance;
 use vulkanalia::prelude::v1_0::*;
 
-use crate::app::appdata::AppData;
+use crate::app::data::AppData;
 
 pub unsafe fn create_render_pass(
     instance: &Instance,
